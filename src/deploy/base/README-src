@@ -1,0 +1,80 @@
+KALAHARI NOMAD VERSION 0.1
+==========================
+$Id: README-src 891 2012-09-13 17:35:23Z mngazimb $
+
+OVERVIEW
+========
+Kalahari Nomad is a peer to peer file sharing application that works only on
+LANs. Inherently it can not be used for copyright infringement in the same
+way as other main stream file sharing applications. By design each nomad can
+only connect to the handful of device typically on most LAN subnets. Hence,
+the best use for this application is sharing files amongst files on home
+networks.
+
+COPYRIGHT
+=========
+This is free and open software. The open source license for release has not
+been determined yet.
+
+AUTHOR
+======
+Name:    Makho Ngazimbi
+Web:     http://www.code83.com
+Email:   makho.ngazimbi@gmail.com
+
+PROJECT BUILD
+=============
+
+  ANT TARGETS
+  -----------
+  1. apidoc - Create source code documentation.
+  2. checkstyle - Perform source code standards checking.
+  3. clean - Remove all build artifacts from project.
+  4. compile - Compile source code.
+  5. deploy - Deploy all deployment packages.
+  6. nightly - Run continuous integration nightly tasks.
+  7. run - Run Kalahari application.
+  8. test - Run unit tests.
+
+JAVA SOURCE CODE
+================
+
+  MESSAGE TYPES
+  -------------
+  1. com.code83.utils.messages.GoodBye - Multicast to incidicate Nomad is
+      going offline.
+  2. com.code83.utils.messages.HeartBeat - Multicast on specified interval to
+      indicate a Nomad is present on the network and its capabilities.
+  3. com.code83.utils.messages.Packet - Contains file or part of a file and
+      is unicast to a requesting nomad.
+  4. com.code83.utils.messages.Ping - Unicast to a particular Nomad to check
+      if present on network and able to respond to messages.
+  5. com.code83.utils.messages.Reply - Unicast from a Nomad able to fulfil a
+      request from another Nomad. Sent in response to a Request message.
+  6. com.code83.utils.messages.Request - Multicast sent to request a file.
+  7. com.code83.utils.messages.Send - Unicast sent to Nomad possessing a file
+      asking for file to be sent.
+
+  THREADS
+  -------
+  com.code83.modules.filemods.FileSender
+  com.code83.modules.filemods.FileMonitor
+  com.code83.modules.filemods.PacketReceiver
+  com.code83.modules.filemods.FileSearch
+  com.code83.modules.auxilliary.ShutdownHook
+  com.code83.modules.communication.HeartBeatThread
+  com.code83.modules.communication.RequestHandler
+  com.code83.modules.communication.HeartBeatServerThread
+  com.code83.modules.communication.jxta.MulticastListener
+  com.code83.modules.communication.jxta.HeartBeatServer
+  com.code83.modules.communication.jxta.UnicastListener
+  com.code83.modules.communication.jxta.UnicastListenerWorker
+  com.code83.ui.gui.panels.StatusUpdateThread
+
+  SINGLETON OBJECTS
+  -----------------
+  Command Register
+  Responder
+  Multicast Listener
+  Unicast Listener
+

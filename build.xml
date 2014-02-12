@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+Project build file
+$Id: build.xml 859 2011-11-10 02:15:21Z mngazimb $
+-->
+<project name="project" default="run">
+
+  <property file="project.properties" />
+  <property environment="env"/>
+  <property name="debuglevel" value="source,lines,vars"/>
+
+  <taskdef resource="checkstyletask.properties"
+    classpath="${tools.checkstyle.jar}" />
+
+  <path id="project.classpath">
+    <pathelement location="${lib.jxta.dir}/${lib.jxta}" />
+    <pathelement location="${lib.logging.dir}/${lib.log4j}" />
+    <pathelement location="${lib.logging.dir}/${lib.sl4j}" />
+    <pathelement location="${lib.logging.dir}/${lib.sl4j.log4j}" />
+    <pathelement location="${lib.gui.dir}/${lib.filedrop}" />
+    <pathelement location="${lib.misc.dir}/${lib.sqlite}" />
+    <pathelement location="${lib.misc.dir}/${lib.dirchooser}" />
+    <pathelement location="${lib.logging.dir}" />
+  </path>
+
+  <path id="project.test.classpath">
+    <pathelement location="${stage.dir}/lib/${app.jar}" />
+    <pathelement location="${tools.junit.jar}" />
+    <pathelement location="${bin.dir}" />
+  </path>
+
+  <path id="project.app.classpath">
+    <fileset dir="${stage.dir}/lib" includes="**/*.jar" />
+    <pathelement location="${stage.dir}/lib" />
+  </path>
+
+  <target name="-init-pre">
+    <tstamp>
+      <format
+          property="deploy.timestamp"
+          pattern="yyyyMMddHHmm" />
+    </tstamp>
+  </target>
+
+  <target name="-init">
+    <mkdir dir="${build.dir}" />
+    <mkdir dir="${stage.dir}" />
+    <mkdir dir="${stage.dir}/lib" />
+    <mkdir dir="${stage.dir}/src" />
+    <mkdir dir="${stage.dir}/data" />
+    <mkdir dir="${stage.dir}/images" />
+    <mkdir dir="${stage.dir}/logs" />
+    <mkdir dir="${stage.dir}/config" />
+    <mkdir dir="${bin.dir}" />
+
+    <mkdir dir="${doc.dir}" />
+    <mkdir dir="${doc.checkstyle.dir}" />
+    <mkdir dir="${doc.junit.dir}" />
+    <mkdir dir="${doc.junit.dir}/raw" />
+    <mkdir dir="${doc.junit.dir}/html" />
+    <mkdir dir="${doc.api.dir}" />
+
+    <mkdir dir="${deploy.dest.dir}" />
+  </target>
+
+  <target name="init" depends="-init-pre,-init" />
+
+  <target name="-compile-pre" depends="init">
+    <copy includeemptydirs="false" todir="${bin.dir}">
+      <fileset dir="${src.dir}">
+        <exclude name="**/*.java"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="configure">
+  </target>
+
+  <target name="compile-test" depends="jar">
+    <javac debug="true"
+      debuglevel="${debuglevel}"
+      destdir="${bin.dir}"
+      source="${java.source}"
+      target="${java.target}">
+      <src path="${test.src.dir}"/>
+      <classpath refid="project.classpath" />
+      <classpath refid="project.test.classpath" />
+    </javac>
+  </target>
+
+  <target name="stage" depends="init,-stage-pre, -stage, -stage-post" />
+
+  <target name="-stage-pre">
+    <copy file="${app.log4j.config}" todir="${stage.dir}/lib" />
+    <copy file="${lib.jxta.dir}/${lib.jxta}" todir="${stage.dir}/lib" />
+    <copy file="${lib.logging.dir}/${lib.log4j}" todir="${stage.dir}/lib" />
+    <copy file="${lib.logging.dir}/${lib.sl4j}" todir="${stage.dir}/lib" />
+    <copy file="${lib.logging.dir}/${lib.sl4j.log4j}"
+      todir="${stage.dir}/lib" />
+    <copy file="${lib.gui.dir}/${lib.filedrop}" todir="${stage.dir}/lib" />
+    <copy file="${lib.misc.dir}/${lib.sqlite}" todir="${stage.dir}/lib" />
+    <copy file="${lib.misc.dir}/${lib.dirchooser}" todir="${stage.dir}/lib" />
+  </target>
+
+  <target name="-stage">
+    <copy todir="${stage.dir}/images">
+      <fileset dir="${app.images.dir}" />
+    </copy>
+  </target>
+
+  <target name="-stage-post">
+    <copy file="${deploy.config.dir}/${app.config}" todir="${stage.dir}/config" />
+  </target>
+
+  <target name="jar" depends="compile, stage"
+      description="Build runnable jar file">
+    <jar destfile="${stage.dir}/lib/${app.jar}" basedir="${bin.dir}">
+      <manifest>
+        <attribute name="Main-Class" value="com.code83.Kalahari"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="run" depends="jar"
+      description="Run the runnable jar file">
+    <!--
+    <if>
+      <isset property="cmd" />
+      <then>
+        <property name="cmd.arg" value="cmd" />
+      </then>
+      <else>
+        <property name="cmd.arg" value="" />
+      </else>
+    </if>
+    -->
+    <java
+        classname="com.code83.Kalahari"
+        fork="true"
+        failonerror="true"
+        maxmemory="${app.maxmemory}"
+        dir="${stage.dir}">
+        <arg value="" />
+      <classpath>
+        <path refid="project.app.classpath" />
+        <path location="${stage.dir}/lib/${app.jar}" />
+      </classpath>
+    </java>
+  </target>
+
+  <target name="deploy"
+      depends="deploy-src,deploy-lnx,deploy-win"
+      description="Build deploy archive files">
+  </target>
+
+  <target name="-deploy-src-pre" depends="apidoc">
+    <copy todir="${stage.src.dir}">
+      <fileset dir="${basedir}">
+        <include name="*/**" />
+        <include name="docs/api" />
+        <exclude name="build/" />
+        <exclude name="docs/checkstyle/" />
+        <exclude name="docs/junit/" />
+        <exclude name="deploy/" />
+        <exclude name=".*" />
+      </fileset>
+    </copy>
+    <copy file="${deploy.base.dir}/README-src"
+        tofile="${stage.src.dir}/README" />
+    <copy file="${deploy.base.dir}/LICENSE"
+        todir="${stage.src.dir}" />
+  </target>
+
+  <target name="deploy-src"
+      depends="clean,init,-deploy-src-pre"
+      description="Build source code deploy archive">
+    <tar
+        destfile="${deploy.dest.dir}/${app.name}-src-${app.version}-${deploy.timestamp}.tar.gz"
+        compression="gzip">
+      <tarfileset dir="${stage.src.dir}"
+          prefix="${app.name}-src-${app.version}">
+        <include name="*/**" />
+      </tarfileset>
+    </tar>
+  </target>
+
+  <target name="-deploy-lnx-pre" depends="jar">
+    <copy todir="${stage.lnx.dir}">
+      <fileset dir="${stage.dir}" />
+    </copy>
+    <copy file="${deploy.base.dir}/README-lnx"
+        tofile="${stage.lnx.dir}/README" />
+    <copy file="${deploy.base.dir}/CHANGELOG"
+        todir="${stage.lnx.dir}" />
+    <copy file="${deploy.base.dir}/LICENSE"
+        todir="${stage.lnx.dir}" />
+  </target>
+
+  <target name="-deploy-lnx" description="Add linux bash script">
+    <!-- Exec copy in order to preserve file permissions  -->
+    <exec executable="cp" failonerror="yes">
+      <arg value="--preserve=mode" />
+      <arg value="${deploy.base.dir}/kalahari.sh" />
+      <arg value="${stage.lnx.dir}" />
+    </exec>
+  </target>
+
+  <target name="-deploy-lnx-post" description="Delete uneccessary artifacts">
+    <delete dir="${stage.lnx.dir}/src" />
+  </target>
+
+  <target name="deploy-lnx"
+      depends="clean,-deploy-lnx-pre,-deploy-lnx,-deploy-lnx-post"
+      description="Build linux deploy archive">
+    <tar
+        destfile="${deploy.dest.dir}/${app.name}-lnx-${app.version}-${deploy.timestamp}.tar.gz"
+        compression="gzip">
+      <tarfileset dir="${stage.lnx.dir}"
+          prefix="${app.name}-lnx-${app.version}">
+        <include name="*/**" />
+        <exclude name=".svn" />
+        <exclude name="kahalari.sh" />
+        <exclude name="logs/*" />
+      </tarfileset>
+      <!-- Preserve executable permissions of kalahari.sh -->
+      <tarfileset dir="${stage.lnx.dir}"
+          prefix="${app.name}-lnx-${app.version}"
+          filemode="755">
+        <include name="kalahari.sh" />
+      </tarfileset>
+    </tar>
+  </target>
+
+  <target name="deploy-win"
+      depends="clean,-deploy-win-pre,-deploy-win,-deploy-win-post"
+      description="Build windows deploy archive">
+    <zip
+        file="${deploy.dest.dir}/${app.name}-win-${app.version}-${deploy.timestamp}.zip"
+        encoding="UTF-8">
+      <zipfileset dir="${stage.win.dir}"
+          prefix="${app.name}-win-${app.version}">
+        <include name="*/**" />
+        <exclude name=".svn" />
+        <exclude name="logs/*" />
+      </zipfileset>
+    </zip>
+  </target>
+
+  <target name="-deploy-win-pre" depends="jar"
+      description="Create windows stage dir">
+    <copy todir="${stage.win.dir}">
+      <fileset dir="${stage.dir}" />
+    </copy>
+
+    <copy todir="${stage.win.dir}/head">
+      <fileset dir="${lib.launch4j.dir}/head" />
+    </copy>
+
+    <copy todir="${stage.win.dir}/w32api">
+      <fileset dir="${lib.launch4j.dir}/w32api" />
+    </copy>
+
+    <copy file="${lib.launch4j.dir}/launch4j.xml" todir="${stage.win.dir}">
+      <filterchain>
+        <replacetokens begintoken="@" endtoken="@">
+          <token key="KALAHARI-JAR" value="lib/${app.jar}" />
+          <token key="KALAHARI-EXE" value="${config.launch4j.exe}" />
+          <token key="KALAHARI-ICO" value="${config.launch4j.icon}" />
+          <token key="JAVA-MIN-VERSION"
+              value="${config.launch4j.java.version}" />
+          <token key="SPLASH-BMP-FILE" value="${config.launch4j.splash}" />
+        </replacetokens>
+      </filterchain>
+    </copy>
+
+    <copy file="${lib.launch4j.dir}/launch4j.jar" todir="${stage.win.dir}" />
+
+    <copy file="${deploy.base.dir}/README-win.txt"
+        tofile="${stage.win.dir}/README.txt" />
+    <copy file="${deploy.base.dir}/CHANGELOG"
+        tofile="${stage.win.dir}/CHANGELOG.txt" />
+    <copy file="${deploy.base.dir}/LICENSE"
+        tofile="${stage.win.dir}/LICENSE.txt" />
+  </target>
+
+  <target name="-deploy-win" depends="jar"
+      description="Create windows executable">
+    <taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask"
+        classpath="${stage.win.dir}/launch4j.jar:${config.launch4j.xstream.jar}" />
+    <launch4j
+        bindir="${lib.launch4j.dir}/bin"
+        configFile="${stage.win.dir}/${config.launch4j.xml}" />
+  </target>
+
+  <target name="-deploy-win-post" depends="jar"
+      description="Clean up unnecessary artifacts">
+    <delete dir="${stage.win.dir}/head" />
+    <delete dir="${stage.win.dir}/w32api" />
+    <delete file="${stage.win.dir}/launch4j.xml" />
+    <delete file="${stage.win.dir}/launch4j.jar" />
+    <delete dir="${stage.win.dir}/src" />
+  </target>
+
+  <target name="test"
+    depends="compile-test"
+    description="Run unit tests">
+
+    <!-- Run unit tests  -->
+    <junit printsummary="yes"
+        haltonfailure="no"
+        fork="yes"
+        dir="${stage.dir}"
+        showoutput="yes">
+      <classpath refid="project.classpath" />
+      <classpath refid="project.test.classpath" />
+      <batchtest fork="yes" todir="${doc.junit.dir}/raw">
+        <formatter type="xml"/>
+        <fileset dir="${test.src.dir}">
+          <include name="**/*Test*.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <!-- Create unit test reports -->
+    <junitreport todir="${doc.junit.dir}">
+      <fileset dir="${doc.junit.dir}/raw">
+        <include name="TEST-*.xml" />
+      </fileset>
+      <report format="frames" todir="${doc.junit.dir}/html" />
+    </junitreport>
+  </target>
+
+  <target name="compile"
+    description="Compile source code"
+    depends="-compile-pre">
+    <echo message="${ant.project.name}: ${ant.file}"/>
+    <javac debug="true"
+        debuglevel="${debuglevel}"
+        destdir="${bin.dir}"
+        source="${java.source}"
+        target="${java.target}"
+        includeAntRuntime="false" >
+      <src path="${src.dir}"/>
+      <classpath refid="project.classpath"/>
+    </javac>
+  </target>
+
+  <target name="apidoc"
+      description="Build source code documentation"
+      depends="init">
+    <javadoc
+        access="${javadoc.access}"
+        destdir="${doc.dir}/api"
+        author="${javadoc.author}"
+        version="${javadoc.version}">
+      <fileset dir="${src.dir}" defaultexcludes="yes">
+        <include name="**/*.java"/>
+      </fileset>
+      <classpath refid="project.classpath"/>
+    </javadoc>
+  </target>
+
+  <target name="checkstyle"
+      description="Run source code checkstyle tool"
+      depends="init">
+    <checkstyle config="${lib.dir}/base/checkstyle_checks.xml"
+        failureProperty="checkstyle.failure"
+        failOnViolation="false">
+      <formatter type="xml" tofile="${doc.checkstyle.dir}/checkstyle_report.xml"/>
+      <fileset dir="${src.dir}" includes="**/*.java"/>
+    </checkstyle>
+
+    <style in="${doc.checkstyle.dir}/checkstyle_report.xml"
+      out="${doc.checkstyle.dir}/checkstyle_report.html"
+      style="${lib.dir}/base/checkstyle.xsl"/>
+  </target>
+
+  <target name="clean"
+    description="Delete all build artifacts">
+    <delete dir="${build.dir}"/>
+    <delete dir="${doc.dir}" />
+    <delete dir="${deploy.dest.dir}" />
+  </target>
+
+  <target name="nightly"
+      description="Run continuous integration nightly tasks"
+      depends="checkstyle, apidoc, test" />
+
+</project>

@@ -1,0 +1,3 @@
+1. For free ware icons go to: http://www.icon-king.com/files/nuvola-1.0.tar.gz
+2. Make a class that stores the string paths to the icons so that refactoring 
+  just involves changing this class only.

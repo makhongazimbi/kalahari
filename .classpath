@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry kind="lib" path="src/lib/base/checkstyle-5.5-all.jar"/>
+	<classpathentry kind="lib" path="src/lib/gui/cglib-nodep-2.1_3.jar"/>
+	<classpathentry kind="lib" path="src/lib/gui/filedrop.jar"/>
+	<classpathentry kind="lib" path="src/lib/gui/spin-1.5.jar"/>
+	<classpathentry kind="lib" path="src/lib/jxta/jxta.jar"/>
+	<classpathentry kind="lib" path="src/lib/logging/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="src/lib/logging/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="src/lib/logging/slf4j-log4j12-1.5.8.jar"/>
+	<classpathentry kind="lib" path="src/lib/misc/l2fprod-common-directorychooser.jar"/>
+	<classpathentry kind="lib" path="src/lib/misc/sqlitejdbc-v056.jar"/>
+	<classpathentry kind="lib" path="src/test/lib/base/junit-4.8.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="build/bin"/>
+</classpath>

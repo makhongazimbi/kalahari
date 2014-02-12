@@ -1,0 +1,30 @@
+<launch4jConfig>
+  <headerType>gui</headerType>
+  <jar>@KALAHARI-JAR@</jar>
+  <dontWrapJar>true</dontWrapJar>
+  <outfile>@KALAHARI-EXE@</outfile>
+  <errTitle>SimpleApp</errTitle>
+  <chdir>.</chdir>
+  <customProcName>true</customProcName>
+  <icon>@KALAHARI-ICO@</icon>
+  <classPath>
+    <mainClass>com.code83.Kalahari</mainClass>
+    <cp>lib/filedrop.jar</cp>
+    <cp>lib/jxta.jar</cp>
+    <cp>lib/l2fprod-common-directorychooser.jar</cp>
+    <cp>lib/log4j-1.2.15.jar</cp>
+    <cp>lib/log4j.xml</cp>
+    <cp>lib/slf4j-api-1.5.8.jar</cp>
+    <cp>lib/slf4j-log4j12-1.5.8.jar</cp>
+    <cp>lib/sqlitejdbc-v056.jar</cp>
+  </classPath>
+  <jre>
+    <minVersion>@JAVA-MIN-VERSION@</minVersion>
+  </jre>
+  <splash>
+    <file>@SPLASH-BMP-FILE@</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>60</timeout>
+    <timeoutErr>true</timeoutErr>
+  </splash>
+</launch4jConfig>
